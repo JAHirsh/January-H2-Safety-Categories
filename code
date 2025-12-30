@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>January Hydrogen Safety Connections</title>
+
+<style>
+  :root{
+    --chs-blue:#005e82;
+    --bg:#f5f5f5;
+    --card:#ffffff;
+    --border:#dddddd;
+    --text:#222;
+    --muted:#555;
+
+    /* NYT-ish solved colors */
+    --yellow:#f6e58d;
+    --green:#badc58;
+    --blue:#7ed6df;
+    --purple:#c7a7ff;
+  }
+
+  body{
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    margin:0;
+    padding:20px;
+    text-align:center;
+    color:var(--text);
+  }
+
+  .wrap{
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  header{
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px 16px 12px;
+    text-align:left;
+  }
+
+  h1{
+    margin:0 0 6px 0;
+    color: var(--chs-blue);
+    font-size: 22px;
+  }
+
+  .sub{
+    margin:0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .meta{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:10px;
+    align-items:center;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 10px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:#fafafa;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .pill strong{ color: var(--text); }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:16px 0 10px;
+    justify-content:center;
+  }
+
+  button{
+    padding:10px 14px;
+    border:none;
+    border-radius:6px;
+    background: var(--chs-blue);
+    color:#fff;
+    cursor:pointer;
+    font-size:14px;
+  }
+
+  button.secondary{
+    background:#666;
+  }
+
+  button:disabled{
+    background:#ccc;
+    cursor:default;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:12px;
+    margin: 10px auto 0;
+  }
+
+  .tile{
+    background: var(--card);
+    border:2px solid var(--border);
+    border-radius:8px;
+    padding:14px 10px;
+    cursor:pointer;
+    user-select:none;
+    min-height:62px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:14px;
+    transition: background-color .15s, border-color .15s, transform .05s;
+  }
+
+  .tile:hover{
+    transform: translateY(-1px);
+  }
+
+  .tile.selected{
+    background:#bfe2f0;
+    border-color: var(--chs-blue);
+  }
+
+  .tile.solved{
+    cursor: default;
+    font-weight: bold;
+    border-color: rgba(0,0,0,.15);
+  }
+
+  /* Solved group colors */
+  .solved.yellow{ background: var(--yellow); }
+  .solved.green { background: var(--green); }
+  .solved.blue  { background: var(--blue); }
+  .solved.purple{ background: var(--purple); }
+
+  .message{
+    margin-top: 14px;
+    min-height: 22px;
+    font-size: 14px;
+    color:#333;
+  }
+
+  .answers{
+    margin-top: 18px;
+    display:none;
+    text-align:left;
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 16px;
+  }
+
+  .answers h3{
+    margin:0 0 10px 0;
+    color: var(--chs-blue);
+    font-size: 16px;
+  }
+
+  .answers .group{
+    margin: 10px 0;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .answers .label{
+    font-weight:bold;
+  }
+
+  .foot{
+    margin-top: 18px;
+    font-size: 12px;
+    color:#666;
+  }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>January Hydrogen Safety Connections</h1>
+    <p class="sub">
+      Select 4 related terms to form a category. Tiles shuffle each time. When you solve a group,
+      it locks in with a color—like the NYT game.
+    </p>
+
+    <div class="meta">
+      <div class="pill">⏱️ Time: <strong id="timer">00:00</strong></div>
+      <div class="pill">✅ Groups solved: <strong id="solvedCount">0</strong>/4</div>
+      <div class="pill">💡 Tip: If you’re <strong>one away</strong>, you’ll get a hint.</div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <button id="submitBtn" disabled>Submit Selection</button>
+    <button id="shuffleBtn" class="secondary">Shuffle Tiles</button>
+    <button id="revealBtn" class="secondary">Reveal Answers</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="message" id="message"></div>
+
+  <div class="answers" id="answers">
+    <h3>January Puzzle — Solution</h3>
+    <div class="group"><span class="label">🟨 Hazard Identification Methods</span><br>
+      HAZOP • FMEA • What-If Analysis • JSA
+    </div>
+    <div class="group"><span class="label">🟩 Primary Personal Protective Equipment</span><br>
+      Safety Glasses • Face Shield • Cut-Resistant Gloves • Hearing Protection
+    </div>
+    <div class="group"><span class="label">🟦 Hydrogen Properties & Behavior</span><br>
+      Buoyancy • Diffusivity • Embrittlement • Invisible Flame
+    </div>
+    <div class="group"><span class="label">🟪 Lab/Facility Readiness & Controls</span><br>
+      Lockout/Tagout • Permit-to-Work • Ventilation Interlock • Emergency Shutdown
+    </div>
+  </div>
+
+  <div class="foot">
+    Built for CHS member engagement & training. (Tip: share in a meeting and compare how teams grouped terms.)
+  </div>
+
+</div>
+
+<script>
+/**
+ * January puzzle content
+ * Designed so categories are clear to safety practitioners but not “row = answer” obvious.
+ */
+const TERMS = [
+  // Hazard Identification Methods
+  "HAZOP", "FMEA", "What-If Analysis", "JSA",
+  // PPE
+  "Safety Glasses", "Face Shield", "Cut-Resistant Gloves", "Hearing Protection",
+  // Hydrogen Properties & Behavior
+  "Buoyancy", "Diffusivity", "Embrittlement", "Invisible Flame",
+  // Lab/Facility Readiness & Controls
+  "Lockout/Tagout", "Permit-to-Work", "Ventilation Interlock", "Emergency Shutdown"
+];
+
+// Each group includes a name + items. Color is assigned in solve order (yellow, green, blue, purple).
+const GROUP_TEMPLATES = [
+  { name: "Hazard Identification Methods", items: ["HAZOP", "FMEA", "What-If Analysis", "JSA"] },
+  { name: "Primary Personal Protective Equipment", items: ["Safety Glasses", "Face Shield", "Cut-Resistant Gloves", "Hearing Protection"] },
+  { name: "Hydrogen Properties & Behavior", items: ["Buoyancy", "Diffusivity", "Embrittlement", "Invisible Flame"] },
+  { name: "Lab/Facility Readiness & Controls", items: ["Lockout/Tagout", "Permit-to-Work", "Ventilation Interlock", "Emergency Shutdown"] }
+];
+
+const SOLVED_COLORS = ["yellow", "green", "blue", "purple"];
+
+let groups = [];           // mutable copy of GROUP_TEMPLATES
+let selected = [];         // currently selected terms
+let solvedMap = new Map(); // term -> color class if solved
+let solvedCount = 0;
+
+// Timer
+let timerStarted = false;
+let startTime = null;
+let timerInterval = null;
+
+const gridEl = document.getElementById("grid");
+const submitBtn = document.getElementById("submitBtn");
+const shuffleBtn = document.getElementById("shuffleBtn");
+const revealBtn = document.getElementById("revealBtn");
+const messageEl = document.getElementById("message");
+const timerEl = document.getElementById("timer");
+const solvedCountEl = document.getElementById("solvedCount");
+const answersEl = document.getElementById("answers");
+
+function pad2(n){ return String(n).padStart(2, "0"); }
+
+function formatElapsed(ms){
+  const total = Math.floor(ms / 1000);
+  const mm = Math.floor(total / 60);
+  const ss = total % 60;
+  return `${pad2(mm)}:${pad2(ss)}`;
+}
+
+function startTimer(){
+  if (timerStarted) return;
+  timerStarted = true;
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    timerEl.textContent = formatElapsed(Date.now() - startTime);
+  }, 250);
+}
+
+function stopTimer(){
+  if (!timerInterval) return;
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function fisherYatesShuffle(array){
+  const arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function resetGameState(keepSolved=false){
+  selected = [];
+  submitBtn.disabled = true;
+  messageEl.textContent = "";
+  answersEl.style.display = "none";
+
+  groups = GROUP_TEMPLATES.map(g => ({ name: g.name, items: g.items.slice() }));
+
+  if (!keepSolved){
+    solvedMap = new Map();
+    solvedCount = 0;
+    solvedCountEl.textContent = String(solvedCount);
+    timerStarted = false;
+    startTime = null;
+    timerEl.textContent = "00:00";
+    stopTimer();
+  }
+}
+
+function renderTiles(){
+  gridEl.innerHTML = "";
+
+  // Show all unsolved terms plus solved ones (solved appear but are locked)
+  const allTerms = fisherYatesShuffle(TERMS);
+
+  allTerms.forEach(term => {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.textContent = term;
+
+    // If already solved, lock and color it
+    if (solvedMap.has(term)){
+      tile.classList.add("solved", solvedMap.get(term));
+      tile.setAttribute("aria-disabled", "true");
+    }
+
+    tile.addEventListener("click", () => {
+      if (tile.classList.contains("solved")) return;
+
+      // Start timer on first interaction
+      startTimer();
+
+      if (selected.includes(term)){
+        selected = selected.filter(t => t !== term);
+        tile.classList.remove("selected");
+      } else {
+        if (selected.length >= 4) return;
+        selected.push(term);
+        tile.classList.add("selected");
+      }
+
+      submitBtn.disabled = (selected.length !== 4);
+      messageEl.textContent = "";
+    });
+
+    gridEl.appendChild(tile);
+  });
+}
+
+function selectionOneAway(){
+  // returns a group name if selection has 3 of 4 from any remaining group
+  for (const g of groups){
+    const count = g.items.filter(i => selected.includes(i)).length;
+    if (count === 3) return g.name;
+  }
+  return null;
+}
+
+function checkMatch(){
+  // exact 4 match any remaining group
+  for (let idx = 0; idx < groups.length; idx++){
+    const g = groups[idx];
+    const allPresent = g.items.every(i => selected.includes(i));
+    if (allPresent) return idx;
+  }
+  return -1;
+}
+
+function applySolvedGroup(groupIndex){
+  const group = groups[groupIndex];
+
+  // Assign next solve color (NYT-ish)
+  const color = SOLVED_COLORS[solvedCount] || "green";
+
+  group.items.forEach(term => solvedMap.set(term, color));
+  solvedCount++;
+  solvedCountEl.textContent = String(solvedCount);
+
+  // remove group from remaining
+  groups.splice(groupIndex, 1);
+
+  // re-render to lock + color solved terms
+  renderTiles();
+
+  if (solvedCount === 4){
+    stopTimer();
+    messageEl.textContent = "🎉 All groups found! Nice work.";
+    submitBtn.disabled = true;
+  } else {
+    messageEl.textContent = `✅ Correct! Group found: ${group.name}`;
+  }
+}
+
+submitBtn.addEventListener("click", () => {
+  const matchIndex = checkMatch();
+
+  if (matchIndex !== -1){
+    applySolvedGroup(matchIndex);
+  } else {
+    const oneAway = selectionOneAway();
+    if (oneAway){
+      messageEl.textContent = `🟨 One away! You're very close to: ${oneAway}`;
+    } else {
+      messageEl.textContent = "❌ Not a valid group — try again!";
+    }
+  }
+
+  // Clear selection visuals
+  selected = [];
+  submitBtn.disabled = true;
+
+  // Remove selected class from any remaining unsolved tiles
+  document.querySelectorAll(".tile.selected").forEach(el => el.classList.remove("selected"));
+});
+
+shuffleBtn.addEventListener("click", () => {
+  // Keep solved groups and timer state; just reshuffle and clear selection
+  selected = [];
+  submitBtn.disabled = true;
+  messageEl.textContent = "";
+  document.querySelectorAll(".tile.selected").forEach(el => el.classList.remove("selected"));
+  renderTiles();
+});
+
+revealBtn.addEventListener("click", () => {
+  const ok = confirm("Reveal the answers? This will end the puzzle for you.");
+  if (!ok) return;
+
+  // Lock everything and show the solution panel
+  stopTimer();
+  answersEl.style.display = "block";
+  messageEl.textContent = "Answers revealed. (Tip: try again after shuffling!)";
+
+  // Mark all terms as solved using the NYT color order by group template order
+  solvedMap = new Map();
+  SOLVED_COUNT_TEMP = 0;
+  GROUP_TEMPLATES.forEach((g, i) => {
+    const color = SOLVED_COLORS[i] || "green";
+    g.items.forEach(term => solvedMap.set(term, color));
+  });
+  solvedCount = 4;
+  solvedCountEl.textContent = "4";
+
+  renderTiles();
+  submitBtn.disabled = true;
+});
+
+(function init(){
+  resetGameState(false);
+  renderTiles();
+})();
+</script>
+
+</body>
+</html>
